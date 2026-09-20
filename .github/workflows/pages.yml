@@ -30,7 +30,7 @@ jobs:
       - name: Collect site
         run: |
           mkdir -p _site
-          cp index.html styles.css app.js id3.js formats.js LICENSE _site/
+          cp index.html styles.css app.js id3.js formats.js LICENSE favicon.svg icon-192.png icon-512.png apple-touch-icon.png manifest.webmanifest og-image.png _site/
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

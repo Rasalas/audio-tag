@@ -7,6 +7,8 @@ Nothing is uploaded; the file is rewritten locally and handed back as a download
 
 Sibling of [msg-reader](https://github.com/Rasalas/msg-reader): same idea (drop files, list on the left, detail on the right), different job.
 
+![Track list, track view and tag editor on a phone](doc/hero.png)
+
 ## How it works
 
 1. Tap the **Add music** button (floating on phones, at the top of the list on desktop) or drop files onto the page.
@@ -40,6 +42,14 @@ Photos from a phone camera are downscaled to 1200px on the long edge and re-enco
 Non-square photos are cropped to a square by default. Picking a photo for one track opens a crop view where you drag and zoom the square; imported photos are centre-cropped and **Adjust crop** in the track view lets you fix that later. The setting *Non-square images* switches to keeping the original aspect ratio instead.
 
 The three-dot menu in the top bar opens Settings (light or dark mode, language auto/English/German, cover size, square crop), About (project, support, legal links and the version) and Clear session. Tapping the brand name also opens About. On phones the system back gesture closes the detail view and the sheets, and a sheet can be swiped down anywhere to dismiss it.
+
+## Screenshots
+
+| Library | Crop | Settings |
+|---|---|---|
+| ![Session image library](doc/screenshots/library.png) | ![Square crop with pan and zoom](doc/screenshots/crop.png) | ![Settings sheet](doc/screenshots/settings.png) |
+
+![Desktop layout: list on the left, track on the right](doc/screenshots/desktop.png)
 
 ## Formats
 
@@ -76,4 +86,6 @@ This bumps `APP_VERSION` in `app.js`, commits, tags `v1.2.0` and pushes. The wor
 - `styles.css` – mobile-first layout, dark mode via `prefers-color-scheme`
 - `app.js` – state, rendering, file handling, image resizing, settings, sheets. `APP_VERSION` lives at the top.
 - `id3.js` – minimal ID3v2 parser and writer
-- `formats.js` – format detection plus the M4A and FLAC readers/writers
+- `formats.js` – format detection plus the M4A, FLAC and OGG readers/writers
+- `favicon.svg`, `icon-*.png`, `apple-touch-icon.png`, `manifest.webmanifest`, `og-image.png` – icons, PWA manifest and link preview image
+- `doc/` – screenshots for this README

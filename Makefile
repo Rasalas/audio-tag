@@ -1,6 +1,6 @@
 PORT ?= 8765
 REPO ?= Rasalas/audio-tag
-SITE_FILES = index.html styles.css app.js id3.js formats.js LICENSE
+SITE_FILES = index.html styles.css app.js id3.js formats.js LICENSE favicon.svg icon-192.png icon-512.png apple-touch-icon.png manifest.webmanifest og-image.png
 
 .PHONY: dev check release pages-setup help
 

@@ -1,0 +1,15 @@
+{
+  "name": "audioTag",
+  "short_name": "audioTag",
+  "description": "Cover art and tags for MP3, M4A, FLAC and OGG files, entirely in your browser.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#121418",
+  "theme_color": "#2563eb",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
