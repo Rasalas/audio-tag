@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" id="themeColor" content="#f7f8fc">
+  <title>audioTag</title>
+  <meta name="description" content="Cover art and tags for MP3, M4A, FLAC and OGG files, entirely in your browser.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='%232563eb'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m9 9 10.5-3m0 6.553v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 1 1-.99-3.467l2.31-.66a2.25 2.25 0 0 0 1.632-2.163Zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 0 1-.99-3.467l2.31-.66A2.25 2.25 0 0 0 9 15.553Z'/%3E%3C/svg%3E">
+  <script>
+    // Apply the saved theme before first paint to avoid a flash.
+    (() => {
+      try {
+        const s = JSON.parse(localStorage.getItem('audioTag.settings') || '{}');
+        const dark = s.theme === 'dark' || (s.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      } catch { /* ignore */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <svg hidden aria-hidden="true">
+    <symbol id="i-note" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m9 9 10.5-3m0 6.553v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 1 1-.99-3.467l2.31-.66a2.25 2.25 0 0 0 1.632-2.163Zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 0 1-.99-3.467l2.31-.66A2.25 2.25 0 0 0 9 15.553Z"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-7-7h14"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.53.85l10.2-6.5a1 1 0 0 0 0-1.7L9.53 4.65A1 1 0 0 0 8 5.5Z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4.5" height="14" rx="1.5"/><rect x="13.5" y="5" width="4.5" height="14" rx="1.5"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></symbol>
+    <symbol id="i-coffee" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5.5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="18.5" r="2"/></symbol>
+    <symbol id="i-crop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M7 2v15a1 1 0 0 0 1 1h14M2 7h15a1 1 0 0 1 1 1v14"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 1 1 2.34 5.66M4 12V6m0 6h6"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></symbol>
+  </svg>
+
+  <div class="drop-overlay" aria-hidden="true"><div class="drop-message" data-i18n="dropHere">Drop music and images here</div></div>
+  <input id="audioInput" type="file" accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/flac,audio/x-flac,audio/ogg,audio/opus,image/*,.mp3,.m4a,.m4b,.mp4,.aac,.flac,.ogg,.oga,.opus" multiple hidden>
+  <input id="imageInput" type="file" accept="image/*" hidden>
+
+  <header class="topbar">
+    <button class="brand" id="brandBtn" type="button" data-i18n-title="about" title="About audioTag">
+      <svg><use href="#i-note"/></svg>
+      <span>audio<b>Tag</b></span>
+    </button>
+    <div class="topbar-actions">
+      <button id="downloadAll" class="btn btn-tonal" hidden>
+        <svg><use href="#i-download"/></svg>
+        <span data-i18n="downloadAll">Save all</span>
+      </button>
+      <button id="menuBtn" class="icon-btn" type="button" data-i18n-title="more" title="More" aria-haspopup="menu" aria-expanded="false" aria-controls="menu">
+        <svg><use href="#i-more"/></svg>
+      </button>
+      <div id="menu" class="menu" role="menu" aria-labelledby="menuBtn" hidden>
+        <button id="menuSettings" class="menu-item" role="menuitem" type="button">
+          <svg><use href="#i-gear"/></svg><span data-i18n="settings">Settings</span>
+        </button>
+        <button id="menuAbout" class="menu-item" role="menuitem" type="button">
+          <svg><use href="#i-info"/></svg><span data-i18n="aboutShort">About</span>
+        </button>
+        <button id="menuClear" class="menu-item" role="menuitem" type="button">
+          <svg><use href="#i-trash"/></svg><span data-i18n="clearSession">Clear session</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app">
+    <section class="pane pane-list" aria-label="Tracks">
+      <button id="addDesktop" class="btn btn-filled btn-add only-desktop" type="button">
+        <svg><use href="#i-plus"/></svg>
+        <span data-i18n="addAudio">Add music</span>
+      </button>
+
+      <div id="suggest" class="suggest" hidden>
+        <img id="suggestThumb" class="suggest-thumb" alt="">
+        <span id="suggestText" class="suggest-text"></span>
+        <button id="suggestApply" class="btn btn-tonal" type="button" data-i18n="applyAllAction">Apply</button>
+        <button id="suggestDismiss" class="icon-btn" type="button" data-i18n-title="dismiss" title="Dismiss">
+          <svg><use href="#i-close"/></svg>
+        </button>
+      </div>
+
+      <div id="notice" class="notice" role="alert" hidden>
+        <span id="noticeText" class="notice-text"></span>
+        <button id="noticeDismiss" class="icon-btn" type="button" data-i18n-title="dismiss" title="Dismiss"><svg><use href="#i-close"/></svg></button>
+      </div>
+
+      <ul id="trackList" class="tracks"></ul>
+
+      <div id="emptyHint" class="empty">
+        <div class="empty-art"><svg><use href="#i-note"/></svg></div>
+        <p class="empty-title" data-i18n="emptyTitle">No tracks yet</p>
+        <p class="empty-sub only-mobile" data-i18n="emptyMobile">Tap + to add MP3, M4A or FLAC files. Everything stays on your phone.</p>
+        <p class="empty-sub only-desktop" data-i18n="emptyDesktop">Add or drop MP3, M4A or FLAC files. Everything stays in your browser.</p>
+      </div>
+    </section>
+
+    <section class="pane pane-detail" id="detailPane" aria-label="Track">
+      <div class="detail-placeholder" id="detailPlaceholder">
+        <svg><use href="#i-image"/></svg>
+        <span data-i18n="selectTrack">Select a track to add a cover</span>
+      </div>
+
+      <div class="detail" id="detail" hidden>
+        <div class="detail-bar">
+          <button id="backBtn" class="icon-btn only-mobile" data-i18n-title="back" title="Back">
+            <svg><use href="#i-back"/></svg>
+          </button>
+          <h1 id="detailTitle" class="detail-heading"></h1>
+          <button id="removeTrackBtn" class="icon-btn" data-i18n-title="removeTrack" title="Remove from list">
+            <svg><use href="#i-trash"/></svg>
+          </button>
+        </div>
+
+        <div class="cover" id="coverBox">
+          <img id="coverImg" alt="" hidden>
+          <div class="cover-empty" id="coverEmpty">
+            <svg><use href="#i-image"/></svg>
+            <span data-i18n="noCover">No cover yet</span>
+          </div>
+          <button id="removeCoverBtn" class="cover-remove" type="button" data-i18n-title="removeCover" title="Remove cover" hidden>
+            <svg><use href="#i-close"/></svg>
+          </button>
+          <button id="pickImageBtn" class="btn cover-cta" type="button">
+            <svg><use href="#i-image"/></svg>
+            <span id="coverCtaText" data-i18n="chooseImage">Choose image</span>
+          </button>
+        </div>
+        <p class="cover-info"><span id="coverInfo"></span><button id="adjustCropBtn" class="text-btn" type="button" hidden><svg><use href="#i-crop"/></svg><span data-i18n="adjustCrop">Adjust crop</span></button></p>
+
+        <button class="meta-card" id="metaCard" type="button" data-i18n-title="editTags" title="Edit tags">
+          <span class="meta-card-text">
+            <span class="meta-main" id="metaTitle"></span>
+            <span class="meta-sub" id="metaArtist"></span>
+            <span class="meta-file" id="metaFile"></span>
+          </span>
+          <svg><use href="#i-edit"/></svg>
+        </button>
+
+        <div class="player" id="playerUi">
+          <button id="playBtn" class="play-btn" type="button" data-i18n-title="play" title="Play">
+            <svg class="ic-play"><use href="#i-play"/></svg>
+            <svg class="ic-pause"><use href="#i-pause"/></svg>
+          </button>
+          <div class="player-track">
+            <input id="seek" class="seek" type="range" min="0" max="1000" value="0" data-i18n-label="position" aria-label="Playback position">
+            <div class="player-times"><span id="tCur">0:00</span><span id="tDur">0:00</span></div>
+          </div>
+        </div>
+        <audio id="player" preload="metadata" hidden></audio>
+
+        <div class="actions">
+          <button id="downloadBtn" class="btn btn-filled btn-lg">
+            <svg><use href="#i-download"/></svg>
+            <span data-i18n="download">Save file</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <button id="addFab" class="fab only-mobile" type="button">
+    <svg><use href="#i-plus"/></svg>
+    <span data-i18n="addAudio">Add music</span>
+  </button>
+
+  <!-- Settings sheet -->
+  <div id="settingsSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
+    <div class="sheet-backdrop" data-close></div>
+    <div class="sheet-panel">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <h2 id="settingsTitle" class="sheet-title" data-i18n="settings">Settings</h2>
+        <button class="icon-btn" type="button" data-close data-i18n-title="close" title="Close"><svg><use href="#i-close"/></svg></button>
+      </div>
+      <div class="sheet-body">
+        <div class="setting">
+          <div class="setting-label" id="lblTheme" data-i18n="theme">Appearance</div>
+          <div class="seg" role="radiogroup" aria-labelledby="lblTheme" data-setting="theme">
+            <button type="button" role="radio" data-value="system" data-i18n="themeSystem">System</button>
+            <button type="button" role="radio" data-value="light" data-i18n="themeLight">Light</button>
+            <button type="button" role="radio" data-value="dark" data-i18n="themeDark">Dark</button>
+          </div>
+        </div>
+        <div class="setting">
+          <div class="setting-label" id="lblLang" data-i18n="language">Language</div>
+          <div class="seg" role="radiogroup" aria-labelledby="lblLang" data-setting="lang">
+            <button type="button" role="radio" data-value="auto" data-i18n="langAuto">Auto</button>
+            <button type="button" role="radio" data-value="en">English</button>
+            <button type="button" role="radio" data-value="de">Deutsch</button>
+          </div>
+        </div>
+        <div class="setting">
+          <div class="setting-label" id="lblSize" data-i18n="coverSize">Cover size</div>
+          <div class="seg" role="radiogroup" aria-labelledby="lblSize" data-setting="maxEdge">
+            <button type="button" role="radio" data-value="500">500 px</button>
+            <button type="button" role="radio" data-value="800">800 px</button>
+            <button type="button" role="radio" data-value="1200">1200 px</button>
+            <button type="button" role="radio" data-value="0" data-i18n="sizeOriginal">Original</button>
+          </div>
+          <p class="setting-hint" data-i18n="coverSizeHint">Larger photos are scaled down to this edge length before embedding. Original keeps the full resolution.</p>
+        </div>
+        <div class="setting">
+          <div class="setting-label" id="lblSquare" data-i18n="squareImages">Non-square images</div>
+          <div class="seg" role="radiogroup" aria-labelledby="lblSquare" data-setting="squareCrop">
+            <button type="button" role="radio" data-value="crop" data-i18n="squareCrop">Crop to square</button>
+            <button type="button" role="radio" data-value="keep" data-i18n="squareKeep">Keep as is</button>
+          </div>
+          <p class="setting-hint" data-i18n="squareHint">Photos you pick yourself open a crop view. Imported images are centre-cropped and can be adjusted afterwards.</p>
+        </div>
+        <button id="resetSettings" class="link-row" type="button">
+          <svg><use href="#i-reset"/></svg>
+          <span class="link-row-text"><span class="link-label" data-i18n="resetSettings">Reset settings</span><span class="link-desc" data-i18n="resetSettingsDesc">Back to defaults. Tracks and images stay.</span></span>
+        </button>
+        <button id="aboutFromSettings" class="link-row" type="button">
+          <svg><use href="#i-info"/></svg>
+          <span class="link-row-text"><span class="link-label" data-i18n="aboutTitle">About audioTag</span><span class="link-desc" data-i18n="aboutDesc">Project, support, legal</span></span>
+          <svg class="link-chevron"><use href="#i-chevron"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- About sheet -->
+  <div id="aboutSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="aboutHeading" hidden>
+    <div class="sheet-backdrop" data-close></div>
+    <div class="sheet-panel">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <h2 id="aboutHeading" class="sheet-title sr-only" data-i18n="aboutTitle">About audioTag</h2>
+        <span aria-hidden="true"></span>
+        <button class="icon-btn" type="button" data-close data-i18n-title="close" title="Close"><svg><use href="#i-close"/></svg></button>
+      </div>
+      <div class="sheet-body about">
+        <div class="about-brand">
+          <div class="about-logo"><svg><use href="#i-note"/></svg></div>
+          <div class="about-name">audio<b>Tag</b></div>
+          <p class="about-tagline" data-i18n="tagline">Covers and tags for your music</p>
+          <p class="about-version"><span data-i18n="version">Version</span> <span id="aboutVersion"></span></p>
+        </div>
+        <p class="about-text" data-i18n="aboutText">An open-source tool that embeds cover images into MP3, M4A, FLAC and OGG files. Everything happens in your browser.</p>
+
+        <div class="section">
+          <h3 class="section-title" data-i18n="secProject">Project</h3>
+          <a class="link-row" href="https://github.com/Rasalas/audio-tag" target="_blank" rel="noopener noreferrer">
+            <svg><use href="#i-github"/></svg>
+            <span class="link-row-text"><span class="link-label">GitHub</span><span class="link-desc" data-i18n="githubDesc">Source code, issues and contributions</span></span>
+          </a>
+        </div>
+
+        <div class="section">
+          <h3 class="section-title" data-i18n="secSupport">Support</h3>
+          <a class="link-row coffee" href="https://buymeacoffee.com/tbuck91j" target="_blank" rel="noopener noreferrer">
+            <svg><use href="#i-coffee"/></svg>
+            <span class="link-row-text"><span class="link-label">Buy Me a Coffee</span><span class="link-desc" data-i18n="coffeeDesc">One-time contribution</span></span>
+          </a>
+          <a class="link-row sponsor" href="https://github.com/sponsors/Rasalas" target="_blank" rel="noopener noreferrer">
+            <svg><use href="#i-heart"/></svg>
+            <span class="link-row-text"><span class="link-label">GitHub Sponsors</span><span class="link-desc" data-i18n="sponsorDesc">Recurring support</span></span>
+          </a>
+        </div>
+
+        <div class="section legal">
+          <h3 class="section-title" data-i18n="secLegal">Legal</h3>
+          <ul class="legal-list">
+            <li><span data-i18n="legalLicense">Licensed under the</span> <a href="https://github.com/Rasalas/audio-tag/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" data-i18n="legalLicenseName">MIT License</a></li>
+            <li data-i18n="legalLocal">Files are processed entirely in your browser. Nothing is uploaded.</li>
+            <li data-i18n="legalStorage">Settings are kept in your browser's local storage. Files are not stored.</li>
+            <li data-i18n="legalNoExternal">No external fonts, scripts or tracking.</li>
+            <li><span data-i18n="legalHosted">Hosted on</span> <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">GitHub Pages</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Library sheet -->
+  <div id="librarySheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="libraryTitle" hidden>
+    <div class="sheet-backdrop" data-close></div>
+    <div class="sheet-panel">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <h2 id="libraryTitle" class="sheet-title" data-i18n="libraryTitle">Choose a cover</h2>
+        <button class="icon-btn" type="button" data-close data-i18n-title="close" title="Close"><svg><use href="#i-close"/></svg></button>
+      </div>
+      <div class="sheet-body">
+        <button id="libraryNew" class="link-row" type="button">
+          <svg><use href="#i-plus"/></svg>
+          <span class="link-row-text"><span class="link-label" data-i18n="libraryNew">New image</span><span class="link-desc" data-i18n="libraryNewDesc">From your photos or files</span></span>
+          <svg class="link-chevron"><use href="#i-chevron"/></svg>
+        </button>
+        <div class="section">
+          <h3 class="section-title" data-i18n="libraryHint">Images from this session</h3>
+          <div id="libraryGrid" class="library-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tags sheet -->
+  <div id="tagsSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="tagsTitle" hidden>
+    <div class="sheet-backdrop" data-close></div>
+    <div class="sheet-panel">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <h2 id="tagsTitle" class="sheet-title" data-i18n="editTags">Edit tags</h2>
+        <button class="icon-btn" type="button" data-close data-i18n-title="close" title="Close"><svg><use href="#i-close"/></svg></button>
+      </div>
+      <div class="sheet-body">
+        <div class="meta-form">
+          <label class="field"><span data-i18n="fTitle">Title</span><input id="fTitle" type="text" autocomplete="off" data-tag="title"></label>
+          <label class="field"><span data-i18n="fArtist">Artist</span><input id="fArtist" type="text" autocomplete="off" data-tag="artist"></label>
+          <label class="field"><span data-i18n="fAlbum">Album</span><input id="fAlbum" type="text" autocomplete="off" data-tag="album"></label>
+          <div class="field-row">
+            <label class="field"><span data-i18n="fYear">Year</span><input id="fYear" type="text" inputmode="numeric" autocomplete="off" data-tag="year"></label>
+            <label class="field"><span data-i18n="fTrack">Track no.</span><input id="fTrack" type="text" inputmode="numeric" autocomplete="off" data-tag="track" placeholder="3/12"></label>
+          </div>
+          <label class="field"><span data-i18n="fGenre">Genre</span><input id="fGenre" type="text" autocomplete="off" data-tag="genre"></label>
+        </div>
+        <p class="setting-hint" id="tagsFile"></p>
+      </div>
+      <div class="sheet-actions">
+        <button id="tagsDone" class="btn btn-filled btn-lg" type="button" data-close data-i18n="done">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Crop sheet -->
+  <div id="cropSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="cropTitle" hidden>
+    <div class="sheet-backdrop" data-close></div>
+    <div class="sheet-panel">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <h2 id="cropTitle" class="sheet-title" data-i18n="cropTitle">Adjust cover</h2>
+        <button class="icon-btn" type="button" data-close data-i18n-title="close" title="Close"><svg><use href="#i-close"/></svg></button>
+      </div>
+      <div class="sheet-body">
+        <div class="crop-stage" id="cropStage"><img id="cropImg" alt="" draggable="false"></div>
+        <input id="cropZoom" class="seek" type="range" min="100" max="400" value="100" data-i18n-label="zoom" aria-label="Zoom">
+        <p class="setting-hint crop-hint" data-i18n="cropHint">Drag to move. Pinch or use the slider to zoom.</p>
+        <div class="crop-actions">
+          <button id="cropKeep" class="btn" type="button" data-i18n="cropKeep">Keep original</button>
+          <button id="cropUse" class="btn btn-filled" type="button" data-i18n="cropUse">Use crop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span id="toastText"></span>
+    <button id="toastAction" class="toast-action" type="button" hidden></button>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
