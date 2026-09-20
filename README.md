@@ -62,7 +62,7 @@ python3 -m http.server 8000
 
 ## Releasing to GitHub Pages
 
-Pages is deployed by `.github/workflows/pages.yml` whenever a `v*` tag is pushed. Set the repository's Pages source to "GitHub Actions" once. Then:
+Pages is deployed by `.github/workflows/pages.yml` whenever a `v*` tag is pushed. Once per repository run `make pages-setup` (needs the `gh` CLI): it sets the Pages source to GitHub Actions and allows `v*` tags to deploy to the `github-pages` environment, which GitHub restricts to the default branch by default. Then:
 
 ```bash
 make release VERSION=1.2.0
