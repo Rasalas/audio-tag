@@ -70,6 +70,14 @@ There is no build step. `make dev` serves the folder with live reload and opens 
 python3 -m http.server 8000
 ```
 
+Run `make check` for JavaScript syntax checks. With the local server running, check menu visibility and interaction on desktop and mobile in both themes:
+
+```bash
+npx @playwright/cli open http://127.0.0.1:8000
+npx @playwright/cli run-code --filename tests/overflow-menu.js
+npx @playwright/cli close
+```
+
 ## Releasing to GitHub Pages
 
 Pages is deployed by `.github/workflows/pages.yml` whenever a `v*` tag is pushed. Once per repository run `make pages-setup` (needs the `gh` CLI): it sets the Pages source to GitHub Actions and allows `v*` tags to deploy to the `github-pages` environment, which GitHub restricts to the default branch by default. Then:

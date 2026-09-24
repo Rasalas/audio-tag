@@ -204,7 +204,8 @@ body.show-detail .pane-list { visibility: hidden; }
   .only-desktop { display: inline-flex !important; }
   p.only-desktop { display: block !important; }
   .pane-list { flex: 0 0 360px; padding: 8px 20px 24px; border-right: 1px solid var(--outline); }
-  .pane-detail { position: static; transform: none; transition: none; padding: 24px 32px; }
+  /* As a flex item, the desktop pane must not keep the mobile overlay's z-index. */
+  .pane-detail { position: static; z-index: auto; transform: none; transition: none; padding: 24px 32px; }
   body.show-detail .pane-list { visibility: visible; }
   .detail-placeholder {
     display: flex;
