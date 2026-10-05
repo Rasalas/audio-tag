@@ -226,7 +226,7 @@ const STRINGS = {
     tagsApplied: (n) => `Album und Interpret bei ${n} Titeln gesetzt`,
   },
 };
-export const APP_VERSION = '1.0.2';
+export const APP_VERSION = '1.1.0';
 
 /* ---------- settings ---------- */
 const SETTINGS_KEY = 'audioTag.settings';
