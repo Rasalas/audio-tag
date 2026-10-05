@@ -195,7 +195,7 @@ function ilstText(u8, ilst, name) {
   return '';
 }
 
-function atom(type, ...parts) {
+export function atom(type, ...parts) {
   const body = concat(parts);
   const out = new Uint8Array(8 + body.length);
   putU32be(out, 0, out.length);
@@ -270,6 +270,9 @@ function create(type, rest, cover, tags = null) {
   }
   return atom(type, inner);
 }
+
+// udta/meta/ilst for a freshly written MP4 (used by the video export).
+export const buildUdta = (tags, cover) => create('udta', ['meta', 'ilst'], cover, tags);
 
 function shiftChunkOffsets(moov, moovStart, delta) {
   // walk trak/mdia/minf/stbl → stco/co64 inside the *new* moov bytes
@@ -538,7 +541,7 @@ const ogg = {
 };
 
 /* ============================== dispatcher ============================== */
-export const ACCEPT = 'audio/mpeg,audio/mp4,audio/x-m4a,audio/flac,audio/x-flac,audio/ogg,audio/opus,.mp3,.m4a,.m4b,.mp4,.aac,.flac,.ogg,.oga,.opus';
+export const ACCEPT = 'audio/mpeg,audio/mp4,video/mp4,audio/x-m4a,audio/flac,audio/x-flac,audio/ogg,audio/opus,.mp3,.m4a,.m4b,.mp4,.aac,.flac,.ogg,.oga,.opus';
 
 export function detectFormat(buf, name = '') {
   const u8 = new Uint8Array(buf);

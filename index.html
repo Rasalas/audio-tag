@@ -28,12 +28,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <script>
-    // Apply the saved theme before first paint to avoid a flash.
+    // Apply the saved theme and text size before first paint to avoid a flash.
     (() => {
       try {
         const s = JSON.parse(localStorage.getItem('audioTag.settings') || '{}');
         const dark = s.theme === 'dark' || (s.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        document.documentElement.style.fontSize = { large: '112.5%', larger: '125%' }[s.textSize] || '';
       } catch { /* ignore */ }
     })();
   </script>
@@ -59,11 +60,12 @@
     <symbol id="i-crop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M7 2v15a1 1 0 0 0 1 1h14M2 7h15a1 1 0 0 1 1 1v14"/></symbol>
     <symbol id="i-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 1 1 2.34 5.66M4 12V6m0 6h6"/></symbol>
     <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></symbol>
+    <symbol id="i-video" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"/></symbol>
     <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></symbol>
   </svg>
 
   <div class="drop-overlay" aria-hidden="true"><div class="drop-message" data-i18n="dropHere">Drop music and images here</div></div>
-  <input id="audioInput" type="file" accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/flac,audio/x-flac,audio/ogg,audio/opus,image/*,.mp3,.m4a,.m4b,.mp4,.aac,.flac,.ogg,.oga,.opus" multiple hidden>
+  <input id="audioInput" type="file" accept="audio/mpeg,audio/mp4,video/mp4,audio/x-m4a,audio/flac,audio/x-flac,audio/ogg,audio/opus,image/*,.mp3,.m4a,.m4b,.mp4,.aac,.flac,.ogg,.oga,.opus" multiple hidden>
   <input id="imageInput" type="file" accept="image/*" hidden>
 
   <header class="topbar">
@@ -155,7 +157,7 @@
             <span id="coverCtaText" data-i18n="chooseImage">Choose image</span>
           </button>
         </div>
-        <p class="cover-info"><span id="coverInfo"></span><button id="adjustCropBtn" class="text-btn" type="button" hidden><svg><use href="#i-crop"/></svg><span data-i18n="adjustCrop">Adjust crop</span></button></p>
+        <p class="cover-info"><span id="coverInfo"></span></p>
 
         <button class="meta-card" id="metaCard" type="button" data-i18n-title="editTags" title="Edit tags">
           <span class="meta-card-text">
@@ -182,6 +184,10 @@
           <button id="downloadBtn" class="btn btn-filled btn-lg">
             <svg><use href="#i-download"/></svg>
             <span data-i18n="download">Save file</span>
+          </button>
+          <button id="videoBtn" class="btn btn-tonal" type="button" hidden>
+            <svg><use href="#i-video"/></svg>
+            <span id="videoBtnText" data-i18n="saveVideo">Save as video</span>
           </button>
         </div>
       </div>
@@ -220,11 +226,19 @@
           </div>
         </div>
         <div class="setting">
+          <div class="setting-label" id="lblText" data-i18n="textSize">Text size</div>
+          <div class="seg" role="radiogroup" aria-labelledby="lblText" data-setting="textSize">
+            <button type="button" role="radio" data-value="normal" data-i18n="textNormal">Normal</button>
+            <button type="button" role="radio" data-value="large" data-i18n="textLarge">Large</button>
+            <button type="button" role="radio" data-value="larger" data-i18n="textLarger">Larger</button>
+          </div>
+        </div>
+        <div class="setting">
           <div class="setting-label" id="lblSize" data-i18n="coverSize">Cover size</div>
           <div class="seg" role="radiogroup" aria-labelledby="lblSize" data-setting="maxEdge">
-            <button type="button" role="radio" data-value="500">500 px</button>
-            <button type="button" role="radio" data-value="800">800 px</button>
-            <button type="button" role="radio" data-value="1200">1200 px</button>
+            <button type="button" role="radio" data-value="500">500&nbsp;px</button>
+            <button type="button" role="radio" data-value="800">800&nbsp;px</button>
+            <button type="button" role="radio" data-value="1200">1200&nbsp;px</button>
             <button type="button" role="radio" data-value="0" data-i18n="sizeOriginal">Original</button>
           </div>
           <p class="setting-hint" data-i18n="coverSizeHint">Larger photos are scaled down to this edge length before embedding. Original keeps the full resolution.</p>
@@ -313,6 +327,11 @@
         <button class="icon-btn" type="button" data-close data-i18n-title="close" title="Close"><svg><use href="#i-close"/></svg></button>
       </div>
       <div class="sheet-body">
+        <button id="libraryCrop" class="link-row" type="button" hidden>
+          <svg><use href="#i-crop"/></svg>
+          <span class="link-row-text"><span class="link-label" data-i18n="adjustCrop">Adjust crop</span><span class="link-desc" data-i18n="adjustCropDesc">Move or zoom the current cover</span></span>
+          <svg class="link-chevron"><use href="#i-chevron"/></svg>
+        </button>
         <button id="libraryNew" class="link-row" type="button">
           <svg><use href="#i-plus"/></svg>
           <span class="link-row-text"><span class="link-label" data-i18n="libraryNew">New image</span><span class="link-desc" data-i18n="libraryNewDesc">From your photos or files</span></span>

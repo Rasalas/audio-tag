@@ -1,6 +1,6 @@
 PORT ?= 8765
 REPO ?= Rasalas/audio-tag
-SITE_FILES = index.html styles.css app.js id3.js formats.js LICENSE favicon.svg icon-192.png icon-512.png apple-touch-icon.png manifest.webmanifest og-image.png
+SITE_FILES = index.html styles.css app.js id3.js formats.js video.js LICENSE favicon.svg icon-192.png icon-512.png apple-touch-icon.png manifest.webmanifest og-image.png
 
 .PHONY: dev check release pages-setup help
 
@@ -11,7 +11,7 @@ dev: ## serve on http://127.0.0.1:$(PORT), open the browser, reload on every sav
 	npx -y live-server --port=$(PORT) --host=127.0.0.1 --ignore=.fixtures,.github,.git
 
 check: ## syntax-check the modules
-	node --check app.js && node --check id3.js && node --check formats.js
+	node --check app.js && node --check id3.js && node --check formats.js && node --check video.js
 
 pages-setup: ## one-time: Pages via Actions and allow v* tags to deploy (needs gh)
 	gh api -X POST repos/$(REPO)/pages -f build_type=workflow >/dev/null 2>&1 || true

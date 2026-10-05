@@ -1,4 +1,5 @@
 import { detectFormat, isSupportedName, TAG_KEYS } from './formats.js';
+import { canMakeVideo, makeVideo } from './video.js';
 
 /* ---------- i18n ---------- */
 const STRINGS = {
@@ -18,6 +19,10 @@ const STRINGS = {
     changeImage: 'Change image',
     removeCover: 'Remove cover',
     download: 'Save file',
+    saveVideo: 'Save as video',
+    videoProgress: (p) => `Creating video … ${p} %`,
+    videoSaved: 'Video saved',
+    videoFailed: 'Could not create the video.',
     changed: 'changed',
     skipped: (names) => `Not supported: ${names}. MP3, M4A, FLAC and OGG/Opus work.`,
     unreadable: (names) => `Could not read: ${names}.`,
@@ -77,6 +82,11 @@ const STRINGS = {
     cropKeep: 'Keep original',
     cropUse: 'Use crop',
     adjustCrop: 'Adjust crop',
+    adjustCropDesc: 'Move or zoom the current cover',
+    textSize: 'Text size',
+    textNormal: 'Normal',
+    textLarge: 'Large',
+    textLarger: 'Larger',
     squareImages: 'Non-square images',
     squareCrop: 'Crop to square',
     squareKeep: 'Keep as is',
@@ -120,6 +130,10 @@ const STRINGS = {
     changeImage: 'Bild ändern',
     removeCover: 'Cover entfernen',
     download: 'Datei speichern',
+    saveVideo: 'Als Video speichern',
+    videoProgress: (p) => `Video wird erstellt … ${p} %`,
+    videoSaved: 'Video gespeichert',
+    videoFailed: 'Das Video konnte nicht erstellt werden.',
     changed: 'geändert',
     skipped: (names) => `Nicht unterstützt: ${names}. MP3, M4A, FLAC und OGG/Opus gehen.`,
     unreadable: (names) => `Konnte nicht gelesen werden: ${names}.`,
@@ -179,6 +193,11 @@ const STRINGS = {
     cropKeep: 'Original behalten',
     cropUse: 'Zuschnitt verwenden',
     adjustCrop: 'Zuschnitt anpassen',
+    adjustCropDesc: 'Aktuelles Cover verschieben oder zoomen',
+    textSize: 'Schriftgröße',
+    textNormal: 'Normal',
+    textLarge: 'Groß',
+    textLarger: 'Sehr groß',
     squareImages: 'Nicht quadratische Bilder',
     squareCrop: 'Quadratisch zuschneiden',
     squareKeep: 'So lassen',
@@ -211,7 +230,7 @@ export const APP_VERSION = '1.0.2';
 
 /* ---------- settings ---------- */
 const SETTINGS_KEY = 'audioTag.settings';
-const DEFAULTS = { theme: 'system', lang: 'auto', maxEdge: 1200, squareCrop: 'crop' };
+const DEFAULTS = { theme: 'system', lang: 'auto', textSize: 'normal', maxEdge: 1200, squareCrop: 'crop' };
 const settings = { ...DEFAULTS };
 try {
   Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'));
@@ -227,6 +246,10 @@ function applyTheme() {
   document.getElementById('themeColor').content = dark ? '#121418' : '#f7f8fc';
 }
 darkQuery.addEventListener('change', applyTheme);
+// Every size in styles.css is rem, so scaling the root scales the whole UI.
+function applyTextSize() {
+  document.documentElement.style.fontSize = { large: '112.5%', larger: '125%' }[settings.textSize] || '';
+}
 
 let lang = 'en';
 const t = (key, ...args) => {
@@ -245,6 +268,7 @@ function applyLanguage() {
   document.querySelectorAll('[data-i18n-label]').forEach((el) => el.setAttribute('aria-label', t(el.dataset.i18nLabel)));
 }
 applyTheme();
+applyTextSize();
 applyLanguage();
 
 /* ---------- state ---------- */
@@ -296,6 +320,8 @@ const els = {
   tCur: $('tCur'),
   tDur: $('tDur'),
   downloadBtn: $('downloadBtn'),
+  videoBtn: $('videoBtn'),
+  videoBtnText: $('videoBtnText'),
   downloadAll: $('downloadAll'),
   removeTrackBtn: $('removeTrackBtn'),
   backBtn: $('backBtn'),
@@ -312,12 +338,12 @@ const els = {
   librarySheet: $('librarySheet'),
   libraryGrid: $('libraryGrid'),
   libraryNew: $('libraryNew'),
+  libraryCrop: $('libraryCrop'),
   cropStage: $('cropStage'),
   cropImg: $('cropImg'),
   cropZoom: $('cropZoom'),
   cropKeep: $('cropKeep'),
   cropUse: $('cropUse'),
-  adjustCropBtn: $('adjustCropBtn'),
   aboutFromSettings: $('aboutFromSettings'),
   toast: $('toast'),
   toastText: $('toastText'),
@@ -455,6 +481,39 @@ async function pickedCover(file) {
   return processImage(file, result.keep ? null : result.crop);
 }
 
+// Videos without an embedded cover start with a frame from the video; null for plain audio.
+function videoFrameCover(file) {
+  return new Promise((resolve) => {
+    const v = document.createElement('video');
+    const url = URL.createObjectURL(file);
+    const timer = setTimeout(() => done(null), 5000);
+    function done(blob) {
+      clearTimeout(timer);
+      v.onloadedmetadata = v.onseeked = v.onerror = null;
+      v.removeAttribute('src');
+      URL.revokeObjectURL(url);
+      if (!blob) return resolve(null);
+      const name = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+      autoCover(new File([blob], name, { type: 'image/jpeg' })).then(resolve, () => resolve(null));
+    }
+    v.muted = true;
+    v.preload = 'auto';
+    v.onloadedmetadata = () => {
+      if (!v.videoWidth) return done(null);
+      v.currentTime = Math.min(1, v.duration / 2 || 0);
+    };
+    v.onseeked = () => {
+      const c = document.createElement('canvas');
+      c.width = v.videoWidth;
+      c.height = v.videoHeight;
+      c.getContext('2d').drawImage(v, 0, 0);
+      c.toBlob(done, 'image/jpeg', 0.9);
+    };
+    v.onerror = () => done(null);
+    v.src = url;
+  });
+}
+
 /* ---------- tracks ---------- */
 async function addFiles(fileList) {
   const files = [...fileList];
@@ -478,6 +537,8 @@ async function addFiles(fileList) {
       continue;
     }
     const cov = meta.cover;
+    let originalCover = cov ? makeCover(cov.bytes, cov.mime, '', cov.width, cov.height) : null;
+    if (!cov && fmt.kind === 'm4a') originalCover = await videoFrameCover(file);
     const tr = {
       id: nextId++,
       file,
@@ -485,7 +546,7 @@ async function addFiles(fileList) {
       fmt,
       tags: Object.fromEntries(TAG_KEYS.map((k) => [k, meta[k] ?? ''])),
       edits: Object.fromEntries(TAG_KEYS.map((k) => [k, meta[k] ?? ''])),
-      originalCover: cov ? makeCover(cov.bytes, cov.mime, '', cov.width, cov.height) : null,
+      originalCover,
       newCover: null,
       removed: false,
       audioUrl: URL.createObjectURL(file),
@@ -831,8 +892,8 @@ function renderDetail() {
     updateSeek();
   }
 
-  els.adjustCropBtn.hidden = !cov?.source;
   els.downloadBtn.disabled = !isChanged(tr);
+  els.videoBtn.hidden = !videoSupported || !cov;
 }
 
 /* ---------- player ---------- */
@@ -885,17 +946,24 @@ for (const input of els.tagInputs) {
 }
 
 /* ---------- download ---------- */
-async function download(tr) {
-  const cov = effectiveCover(tr);
-  if (cov) await ensureDims(cov);
-  const { blob, droppedTags } = tr.fmt.write(tr.buf, cov, tagsChanged(tr) ? tr.edits : null);
+let videoSupported = false;
+canMakeVideo().then((ok) => { videoSupported = ok; renderDetail(); });
+
+function saveBlob(blob, name) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = tr.file.name;
+  a.download = name;
   document.body.appendChild(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
+}
+
+async function download(tr) {
+  const cov = effectiveCover(tr);
+  if (cov) await ensureDims(cov);
+  const { blob, droppedTags } = tr.fmt.write(tr.buf, cov, tagsChanged(tr) ? tr.edits : null);
+  saveBlob(blob, tr.file.name);
   return droppedTags;
 }
 
@@ -904,7 +972,10 @@ const openAudioPicker = () => els.audioInput.click();
 els.addFab.addEventListener('click', openAudioPicker);
 els.addDesktop.addEventListener('click', openAudioPicker);
 els.pickImageBtn.addEventListener('click', () => {
-  if (libraryItems().length) {
+  const tr = tracks.find((x) => x.id === selectedId);
+  const canCrop = !!(tr && effectiveCover(tr)?.source);
+  if (libraryItems().length || canCrop) {
+    els.libraryCrop.hidden = !canCrop;
     renderLibrary();
     pushLayer('library');
   } else els.imageInput.click();
@@ -971,6 +1042,29 @@ els.downloadBtn.addEventListener('click', async () => {
     toast(dropped ? t('droppedTags') : t('saved'));
   } catch (err) {
     toast(err.message);
+  }
+});
+
+els.videoBtn.addEventListener('click', async () => {
+  const tr = tracks.find((x) => x.id === selectedId);
+  const cov = tr && effectiveCover(tr);
+  if (!cov) return;
+  els.videoBtn.disabled = true;
+  els.videoBtn.setAttribute('aria-busy', 'true');
+  els.videoBtnText.textContent = t('videoProgress', 0);
+  try {
+    const blob = await makeVideo(tr.buf, cov, tr.edits, (p) => {
+      els.videoBtnText.textContent = t('videoProgress', Math.round(p * 100));
+    });
+    saveBlob(blob, tr.file.name.replace(/\.[^.]+$/, '') + '.mp4');
+    toast(t('videoSaved'));
+  } catch (err) {
+    console.error(err);
+    toast(t('videoFailed'));
+  } finally {
+    els.videoBtn.disabled = false;
+    els.videoBtn.removeAttribute('aria-busy');
+    els.videoBtnText.textContent = t('saveVideo');
   }
 });
 
@@ -1088,7 +1182,12 @@ els.cropStage.addEventListener('pointercancel', endPointer);
 // Keep the sheet's swipe-to-dismiss from reacting to drags on the stage.
 ['touchstart', 'touchmove', 'touchend'].forEach((ev) => els.cropStage.addEventListener(ev, (e) => e.stopPropagation(), { passive: true }));
 
-els.adjustCropBtn.addEventListener('click', async () => {
+els.libraryCrop.addEventListener('click', () => {
+  closeLayer();
+  // wait for the library entry to pop, otherwise the crop sheet's pushState lands on top of it
+  window.addEventListener('popstate', adjustCrop, { once: true });
+});
+async function adjustCrop() {
   const tr = tracks.find((x) => x.id === selectedId);
   const cov = tr && effectiveCover(tr);
   if (!cov?.source) return;
@@ -1101,7 +1200,7 @@ els.adjustCropBtn.addEventListener('click', async () => {
   } catch (err) {
     toast(err.message);
   }
-});
+}
 
 /* ---------- overflow menu ---------- */
 document.getElementById('aboutVersion').textContent = APP_VERSION;
@@ -1157,6 +1256,7 @@ els.resetSettings.addEventListener('click', () => {
   Object.assign(settings, DEFAULTS);
   saveSettings();
   applyTheme();
+  applyTextSize();
   applyLanguage();
   renderSettings();
   renderAll();
@@ -1256,6 +1356,7 @@ document.querySelectorAll('.seg[data-setting] button').forEach((b) => {
     settings[key] = key === 'maxEdge' ? Number(b.dataset.value) : b.dataset.value;
     saveSettings();
     if (key === 'theme') applyTheme();
+    if (key === 'textSize') applyTextSize();
     if (key === 'lang') {
       applyLanguage();
       renderList();

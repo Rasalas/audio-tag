@@ -83,6 +83,7 @@ svg { width: 1.25em; height: 1.25em; flex: none; }
 }
 .btn:active { transform: scale(0.96); border-radius: 16px; }
 .btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+.btn[aria-busy="true"] { opacity: 1; cursor: progress; }  /* progress text must stay readable */
 .btn-filled { background: var(--primary); color: var(--on-primary); }
 .btn-tonal { background: var(--primary-container); color: var(--on-primary-container); }
 .btn-lg { min-height: 56px; padding: 14px 28px; font-size: 1.05rem; width: 100%; }
@@ -180,7 +181,7 @@ body.show-detail .fab { transform: translateY(140px); opacity: 0; pointer-events
 .about-version { margin: 4px 0 0; font-size: 0.85rem; color: var(--muted); }
 .brand svg { width: 24px; height: 24px; }
 .brand b { font-weight: 800; }
-.topbar .btn { min-height: 44px; padding: 8px 16px; font-size: 0.9375rem; }
+.topbar .btn { min-height: 44px; padding: 8px 16px; font-size: 0.9375rem; white-space: nowrap; }
 
 /* ---------- layout ---------- */
 .app { flex: 1; display: flex; min-height: 0; }
@@ -439,7 +440,7 @@ body.is-dragging .drop-overlay { display: flex; }
 
 .meta-form { display: flex; flex-direction: column; gap: 10px; }
 .field { display: flex; flex-direction: column; gap: 4px; }
-.field > span { font-size: 0.8rem; font-weight: 600; color: var(--muted); padding-left: 14px; }
+.field > span { font-size: 0.875rem; font-weight: 600; color: var(--muted); padding-left: 14px; }
 .field input {
   width: 100%;
   min-height: 48px;
@@ -525,26 +526,12 @@ body.is-dragging .drop-overlay { display: flex; }
   margin: 20px -16px 0;
   padding: 12px 16px calc(12px + var(--safe-b));
   background: linear-gradient(to top, var(--bg) 75%, transparent);
+  display: grid;
+  gap: 8px;
 }
 @media (min-width: 768px) {
   .actions { position: static; margin: 20px 0 0; padding: 0; background: none; }
 }
-.text-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: 10px;
-  padding: 4px 10px;
-  border: none;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--primary);
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-.text-btn svg { width: 16px; height: 16px; }
-.text-btn:active, .text-btn:hover { background: var(--surface-low); }
 
 /* ---------- library sheet ---------- */
 .library-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 48dvh; overflow-y: auto; overscroll-behavior: contain; padding: 2px; margin: -2px; }
@@ -570,7 +557,7 @@ body.is-dragging .drop-overlay { display: flex; }
   border-radius: 999px;
   background: color-mix(in srgb, var(--inverse-surface) 75%, transparent);
   color: var(--inverse-on-surface);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   text-align: left;
 }
@@ -689,7 +676,7 @@ body.is-dragging .drop-overlay { display: flex; }
 .seg button {
   flex: 1;
   min-height: 40px;
-  padding: 6px 10px;
+  padding: 6px 8px;
   border: none;
   border-radius: 999px;
   background: transparent;
@@ -725,7 +712,7 @@ body.is-dragging .drop-overlay { display: flex; }
 .link-desc { font-size: 0.875rem; color: var(--muted); }
 .link-chevron { width: 20px !important; height: 20px !important; color: var(--muted) !important; }
 .section { display: flex; flex-direction: column; gap: 8px; }
-.section-title { margin: 0 0 2px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.section-title { margin: 0 0 2px; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 
 .about-brand { text-align: center; padding-top: 4px; }
 .about-logo { width: 72px; height: 72px; margin: 0 auto 10px; border-radius: 26px; background: var(--primary-container); color: var(--on-primary-container); display: grid; place-items: center; }

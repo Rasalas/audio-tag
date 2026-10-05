@@ -31,6 +31,8 @@ You can also import music and images together, in one drop or one file picker se
 Every image seen in a session lands in a small library, newest first. **Choose image** on a track opens it as a scrollable grid (plus the covers the files came with) with **New image** at the top for the photo picker. Removing an image from the library only affects the library, not the tracks using it.
 
 Nothing is persisted: tracks, images and the library live in memory and are gone after a reload or browser restart. Only the settings are kept in local storage. **Clear session** in the three-dot menu drops everything in memory; **Reset settings** in the settings sheet restores the defaults.
+MP4 videos can be loaded too: without an embedded cover they start with a frame from the video, which you can change like any other cover. Saving writes the cover and tags into the video; the moving picture stays.
+**Save as video** below it turns the track into an MP4 for WhatsApp, Instagram or YouTube: the cover as a still 1080×1080 picture, the music re-encoded to AAC, title and artist carried over. It uses WebCodecs, so the button only shows where the browser can encode H.264 and AAC (Chrome and Samsung Internet on Android, current desktop browsers).
 The X in the corner of the cover removes it. **Save all** in the top bar downloads every changed track in sequence.
 
 The look follows Material 3 Expressive: pill buttons, tonal surfaces, a custom pill player, springy press feedback, light and dark mode.
@@ -39,9 +41,9 @@ Accessibility: all text meets WCAG AA contrast in both themes, sizes are in rem 
 
 Photos from a phone camera are downscaled to 1200px on the long edge and re-encoded as JPEG before embedding. HEIC works wherever the browser can decode it (Safari on iOS does).
 
-Non-square photos are cropped to a square by default. Picking a photo for one track opens a crop view where you drag and zoom the square; imported photos are centre-cropped and **Adjust crop** in the track view lets you fix that later. The setting *Non-square images* switches to keeping the original aspect ratio instead.
+Non-square photos are cropped to a square by default. Picking a photo for one track opens a crop view where you drag and zoom the square; imported photos are centre-cropped and **Adjust crop** at the top of the **Change image** sheet lets you fix that later. The setting *Non-square images* switches to keeping the original aspect ratio instead.
 
-The three-dot menu in the top bar opens Settings (light or dark mode, language auto/English/German, cover size, square crop), About (project, support, legal links and the version) and Clear session. Tapping the brand name also opens About. On phones the system back gesture closes the detail view and the sheets, and a sheet can be swiped down anywhere to dismiss it.
+The three-dot menu in the top bar opens Settings (light or dark mode, language auto/English/German, text size, cover size, square crop), About (project, support, legal links and the version) and Clear session. Tapping the brand name also opens About. On phones the system back gesture closes the detail view and the sheets, and a sheet can be swiped down anywhere to dismiss it.
 
 ## Screenshots
 
@@ -95,5 +97,6 @@ This bumps `APP_VERSION` in `app.js`, commits, tags `v1.2.0` and pushes. The wor
 - `app.js` – state, rendering, file handling, image resizing, settings, sheets. `APP_VERSION` lives at the top.
 - `id3.js` – minimal ID3v2 parser and writer
 - `formats.js` – format detection plus the M4A, FLAC and OGG readers/writers
+- `video.js` – still-image MP4 export (WebCodecs encoders and a minimal MP4 muxer)
 - `favicon.svg`, `icon-*.png`, `apple-touch-icon.png`, `manifest.webmanifest`, `og-image.png` – icons, PWA manifest and link preview image
 - `doc/` – screenshots for this README
